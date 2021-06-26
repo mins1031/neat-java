@@ -231,3 +231,14 @@ SOLID라고 하는 5가지 설계 원칙이 존재한다
   > 메서드 작업 내용중 인스턴스 변수를 필요로 한다면 static을 붙일 수 없다. 반대로 인스턴스 변수를 사용하지 않는다면 static붙이는 것이 좋다. 메서드 호출시간이 짧아지고 메모리에 한번만 적재하기에 효율적이다.
   ===> 다만 static은 객체지향적이기 보단 절차지향적인 느낌이 강하다... 또한 메모리에 한번만 올라가는 점은 효율적이지만 프로그램 종료시까지 메모리에 살아있기 때문에 다른문제를 야기할 수도 있다. 결론: static은 자주사용되는곳의 클래스변수로 할만한 곳에 선언하자.아니면 싱글톤을 활용하는것도 훌륭한 대안이 될 수 있다.
 
+## ==,equals,instanceof
+* 자바에서 ==은 기본타입인 int,double,char등에서는 '값'이 같은가를 비교하고 객체(참조타입)의 경우 주소값이 같은가를 비교하게 된다
+* equals의 경우도 기본적으로 내부 로직은 == 비교를 하고 있도록 구현되어있지만 클래스를 구현시 해당 클래스에 맞게 오버라이딩 하고 String의 경우 equals를 값이 동일하면 true를 리턴하도록 오버라이딩 해놓았기 때문에 '문자열 값'자체를 비교하게 된다.
+```
+String a = new String("a");
+String b = new String("b");
+String c = new String("a");
+System.out.println(a.equals(b)); // a와 b는 내용이 다르기 때문에 false
+System.out.println(a == b); // a와 b는 각자 다른 String 객체기 때문에 false
+System.out.println(a.equals(c));// a와 b는 서로 내용이 같기 때문에 true
+```
