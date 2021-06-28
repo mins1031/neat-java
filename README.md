@@ -451,3 +451,164 @@ key:baby, value:아기
  * 중간 데이터를 추가,삭제하는 경우 L가 A보다 빠르다
  * 결론적으로는 서술된 내용처럼 A는 일반적으로 검색시 빠르고 추가,삭제는 L보다 대체적으로 느리고 L은 검색시엔 A보다 느리지만 일반적으로 추가,삭제시는 빠르다. 
  
+## Thread
+> 집에 사람이 한명 살고 일을 한다. 집은 화장실,부엌, 침실등 한사람이 살기 완벽한 환경을 제공. 그런데 일을 더 하기위해 사람을 열명 늘리고 집을 열채 늘린다면? -> 비효율적임...  집 한채로 열명을 커버하면 통신도 쉽고 훨씬 적은 공간으로, 적은 자원을 소모하며 많은 일을 할 수 있다.(악덕..?)  이렇게 한집에 한명이 사는건 싱글 스레드, 한집에 열명이 있는건 멀티 스레드이다.
+  * 프로세스
+    * 프로세스는 자신만의 메모리 공간을 포함한 완벽한 자신만의 실행 환경을 갖고 있다.
+    * 프로세스는 프로그램이나 애플리케이션과 비슷한 말 같지만 한개의 어플리케이션이 여러 개의 프로세스로 이루어질수 있다
+    * 대부분의 OS는 파이프나, 소켓 같은 내부 프로세스 통신을 지원한다.
+    * 대부분의 JVM은 싱글 프로세스로 동작한다.
+  * 스레드
+    * 스레드는 경량 프로세스로 불리기도한다
+    * 프로세스와 스레드는 모두 실행환경을 제공하지만 스레드를 만드는 것이 프로세스를 만드는 것보다 더 적은 자원을 필요로 한다
+    * 스레드들은 프로세스 안에 존재하고 모든 프로세스들은 적어도 하나의 스레드를 가지고 있다. 스레드들은 메모리나 파일같은 프로세스의 자원을 공유한다. 이것은 효율적이지만 잠재적으로 스레드들간의 통신문제를 야기한다. -> 두사람이 동시에 화장실을 사용하는 경우...?
+    * 모든 자바 어플리케이션은 Main 스레드라는 한 스레드에서 시작한다. main스레드는 추가적인 스레드들을 만들수 있다.
+  ### java에서 스레드를 만드는 방법
+  1) Thread 클래스를 extends해 run()메서드를 오버라이드해 스레드로 동작할 코드를 구현하고 인스턴스화 해서 start()메서드로 시작시켜준다.
+  ```
+   public class SomeThread extends Thread{
+        @Override
+        public void run() {
+            //TODO: 스레드로 동작할 코드
+            //super.run();
+        }
+    }
+    ...
+    
+    public static void main(String [] args){
+
+        Thread t = new SomeThread();
+        t.start();
+    }
+  ```
+  2) Runnable 인터페이스를 implements해서 Thread의 생성자에 넣어 생성.
+  ```
+  public class SomeRunnable implements Runnable{
+        @Override
+        public void run() {
+            //TODO: 스레드로 동작할 코드
+        }
+    }
+
+    public static void main(String [] args){
+
+        //Thread t = new SomeThread();
+        //t.start();
+        
+        Runnable r = new SomeRunnable();
+        Thread t = new Thread(r) ;
+        t.start();
+    }
+  ```
+ 아래와 같은 이유로 2번이 더 효율적이다
+ 1) Runnable 오브젝트를 사용하면 Thread클래스가 아닌 다른 클래스를 상속해서 사용할 수 있다.
+ 2) 태스크 클래스가 Thread 클래스를 상속할 필요없이 태스크와 Thread오브젝트를 분리시킬수 있다.=>  run() 의 내용이 태스크인데 1번은 Thread를 상속받아 run()이 스레드의 태스크 그자체인 반면 Runnable로 만든 클래스 자체는 쓰레드가 아닐뿐 더러 태크스와 스레드가 분리되어있다.즉 스레드 내에 태스크를 넣어서 사용하는 것이다 => '축구를 하기위해선 축구선수 아들일 필요는 없다.'
+ ### 동기화
+  * 스레드 간섭 : 만약 프린터라는 공유 자원이 있는 경우 스레드A가 프린터에 접근해 프린트중 스레드B가 프린터에 접근해 원하는 내용을 프린트한다면 서로 내용이 꼬여버린다. 이것을 스레드 간섭이라고 한다
+  ```
+  public class Printer {
+
+    public void print(String str){
+        for (char c: str.toCharArray()) {
+            System.out.print(c); //한글자씩 출력
+            try {
+                Thread.sleep(1000); //스레드 간섭을 보기 위해 sleep을 둠
+            } catch (InterruptedException e){}
+        }
+        System.out.println('\n');
+    }
+}
+public static void main(String[] args){
+        Printer printer = new Printer();
+
+        new Thread(() -> printer.print("ABCDE")).start();
+        new Thread(() -> printer.print("abcde")).start();
+}
+  ```
+  * 위의 두 스레드는 밑처럼 하나의 명령이 끝나고 다음 동작이 실행되는것이 아니다
+   ```
+   printer.print("ABCDE");
+   printer.print("abcde");
+   ```
+   * 첫 스레드 start()후 바로 밑의 스레드가 실행되는 것이기 때문에 서로 독립적으로 동시에 동작하고 있는것이다. **다만 여기서 문제는'printer라는 공유자원을 둘이 동시에 사용한다는것'이다**
+   => 그래서 이것을 막아주는 것이 **'동기화(Synchromization)'** 이다
+    ```
+    public class Printer {
+	    public synchronized void print(String str){
+		for (char c: str.toCharArray()) {
+		    System.out.print(c); //한글자씩 출력
+		    try {
+			Thread.sleep(1000); //스레드 간섭을 보기 위해 sleep을 둠
+		    } catch (InterruptedException e){}
+		}
+		System.out.println('\n');
+	    }
+    } 
+    ```
+    * print()메서드에 synchronized를 명시해 동기화를 시켜주면 위의 처음 스레드가 먼저 키를 쥐고 걸어잠궜기에 밑의 스레드는 동작할수 없고 처음 스레드가 끝난후 밑의 스레드가 사용하게 된다.
+    * 다만 동기화는 적절한곳(하나의 동작이 진행될때 간섭되면 안되는경우)에 주의해서 사용해야한다.
+      * ex) 어떤 파일을 읽는경우는 내가읽을 때 다른사람이 읽어도 상관x, 하지만 파일 쓰기 경우엔 내가쓸때 다른 사람이 쓰게되면 내용이 이상해 지기 때문에 동기화 해줘야 한다.
+    * 또한 동기화는 꼭 메서드 전체에 할필요 없이 
+    ```
+    public void print(String str){
+      synchronized(this){
+	for (char c: str.toCharArray()) {
+	     System.out.print(c); //한글자씩 출력
+	 try {
+		Thread.sleep(1000); //스레드 간섭을 보기 위해 sleep을 둠
+	 } catch (InterruptedException e){}
+	}
+      }	
+	System.out.println('프린트');
+	    }
+    ```
+    * 위처럼 일정 부분에 동기화할 수 있다.
+    => 동기화는 필요한 부분에 최소한으로 해줘야 속도저하 없이 서버를 운영할 수 있다.
+  ### 스레드 풀
+  > 실제로는 위에서 보았던것 처럼 스레드를 생성하지 않는다. 스레드를 생성하고 해제하는 과정은 메모리에 공간받아 올렸다 해제시 메모리에서 내리는 이런과정은 상당한 메모리 관리 오버헤드가 발생한다.
+    * 예시로 웹서버의 경우 하나의 request는 하나의 스레드가 처리하는데 요청이 올떄마다 생성,해제하면 서버가 엄청 느려지게된다.
+  > 그래서 스레드를 미리 많이 만들어 놓은 다음 요청이 오면 그 스레드에 태스크를 할당하고 태스크가 끝나도 스레드는 죽지않고 대기하다가 다른 요청이오면 또 처리하는 이러한 과정을 거치고 이렇게 스레드를 많이 만들어 놓은 것을 '스레드 풀'이라고 한다. 또한 스레드 풀에서 동작하는 스레드를 '워크 스레드'라고 한다.
+  * ExecutorService : 자바의 기본 스레드풀 인터페이스 이다.
+  ```
+   public static void main(String[] args){
+        RestRoom restRoom = new RestRoom();
+
+        Runnable r = () -> restRoom.use();
+        //워크 스레드 2개의 풀 생성
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        //스레드 4개가 돌려야 할것 같지만 2개가 번갈아서 돌려줌.
+        service.execute(r);
+        service.execute(r);
+        service.execute(r);
+        service.execute(r);
+
+        //ExecutorService는 shutdown()해주지 않으면 스레드 풀은 계속 돌고 있다.
+        service.shutdown();
+    }
+  => 
+  pool-1-thread-2 : 화장실에 들어갔다.
+pool-1-thread-2: 화잘실에서 나왔다.
+pool-1-thread-1 : 화장실에 들어갔다.
+pool-1-thread-2: 손을 씻었다.
+pool-1-thread-1: 화잘실에서 나왔다.
+pool-1-thread-2 : 화장실에 들어갔다.
+pool-1-thread-2: 화잘실에서 나왔다.
+pool-1-thread-1: 손을 씻었다.
+pool-1-thread-1 : 화장실에 들어갔다.
+pool-1-thread-1: 화잘실에서 나왔다.
+pool-1-thread-2: 손을 씻었다.
+pool-1-thread-1: 손을 씻었다.
+  ```
+  * ScheduledExecutorService : 위의 ExecutorService를 상속받은 스레트풀 스케쥴러. 깊이있게는 추후 공부.
+  ```
+   public static void main(String[] args){
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+        Runnable beeper = () -> System.out.println("beep");
+
+        //scheduleAtFixedRate(태스크, 처음 실행 딜레이, 간격, 딜레이,간격에 대한 단위)
+        // beeper 태스크를 1초후 부터 1초 단위로 실행
+        // 일정간격 규칙적으로 어떤것을 하고 싶을때 사용할수 있다. 스레드의 실행을 체계적으로 적용가능.
+        scheduler.scheduleAtFixedRate(beeper, 1,1, TimeUnit.SECONDS);
+    }
+  ```
