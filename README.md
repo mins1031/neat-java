@@ -332,18 +332,90 @@ three
   System.out.println(A.contailsAll(C));
   ```
   <img src="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2155.png"/>
+  
   #### 합집합
   ```
   A.addAll(B);
   ```
   <img src="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2156.png"/>
+  
   #### 교집합
   ```
   A.retainAll(B);
   ```
   <img src="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2157.png"/>
+  
   #### 차집합
   ```
   A.removeAll(B);
   ```
   <img src="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2158.png"/>
+  
+  #### HashSet
+  > HashSet클래스는 해시 알고리즘을 사용하여 **검색속도가 매우 빠르다**. 내부적으로 HashMap인스턴스를 이용하여 요소를 저장한다.
+  * Set인터페이스를 구현하기에 **요소를 순서에 상관없이 저장하고 중복된 값을 저장하지 못한다**.
+  * 중복된 값을 add()하게 되면 false를 반환한다. 이떄 내부적으로는 1) 해당 요소에서 hashCode()메서드를 호출해 반환된 해시값으로 검색할 범위를 결정, 2) 해당 범위내의 요소들을 equals()로 비교. => 따라서 hashCode()와 equals()를 상황에 맞게 오버라이딩 해야한다.
+  * 해시코드와 equals로 이중으로 검사하는 이유는 
+    1) 우선 hashCode()가 빠르기 때문에 객체의 동일여부를 빠르게 판단할 수 있다
+    2) 또한 해시코드는 둘의 해시코드가 다르면 무조건 다른 객체지만 같다고해서 무조건 같은 객체는 아니기 떄문에 equals로 한번더 검증해준다.
+    => 해시코드를 '이름'이라고 생각하면 이름이 다르면 다른사람이지만 동명이인도 있기 때문에 이경우 얼굴로 비교를해주는 것을 생각해보면 된다. 
+  ```
+  예제로 작성하던 Point(좌표) 클래스의 hashCode,equals
+  @Override
+    public boolean equals(Object o) {
+        if (o instanceof Point){
+            Point p = (Point) o;
+            return this.x == p.getX() && this.y == p.getY();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
+  ```
+ ### Map
+ > Map 인터페이스는 Collection 인터페이스와는 다른 저장방식을 가진다. Map 인터페이스를 구현한 Map컬렉션 클래스들을 키와 값을 하나의 쌍으로 저장하는방식인 key-value 방식을 사용한다.
+ * Map인터페이스를 구현한 Map컬렉션 클래스들은 다음과 같은 특징을 가진다
+   1) 요소의 저장순서를 유지하지 않는다.
+   2) 키는 중복을 허용하지 않지만, 값의 중복은 가능.
+   3) 대표적인 Map컬렉션클래스에 속하는 클래스는
+     1) HashMap<K,V>
+     2) HashTable<K,V> : 자바의 버전호환성을 위해 남아있고 HashMap사용 권장.
+     3) TreeMap<K,V> : 이진검색 트리의 형태로 저장한다. 추가,삭제등의 기본동작속도가 매우 빠르다.
+ 
+  #### HashMap <K,V>클래스
+  > Map 컬렉션 클래스에서 가장 많이 사용되는 클래스이고 역시 해시 알고리즘을 사용해 검색 속도가 매우 빠르다. HashMap의 경우 HashSet과 다르게 이미 값의 식별자가 존재하기에 동일여부를 판단하기 위한 추가 작업이 필요하지 않다.
+  ```
+  public static void main(String[] args) {
+        Map<String, String> dic = new HashMap<>();
+
+        dic.put("baby","아기");
+        dic.put("love","사랑");
+        dic.put("apple","사과");
+
+        //모든 엔트리 꺼내기 1
+        Set<String> ketSet = dic.keySet();
+        for (String key : ketSet){
+            String value = dic.get(key);
+            System.out.println("key:"+key+ ", value:"+value);
+        }
+        System.out.println("=====================================");
+
+        //모든 엔트리 꺼내기 2
+        Set<Map.Entry<String,String>> entrySet = dic.entrySet();
+        for (Map.Entry<String ,String> map : entrySet){
+            System.out.println("key:"+map.getKey()+ ", value:"+map.getValue());
+        }
+    }
+=> key:love, value:사랑
+key:apple, value:사과
+key:baby, value:아기
+=====================================
+key:love, value:사랑
+key:apple, value:사과
+key:baby, value:아기
+  ```
+  이러하게 저장되고 출력해준다.
+### List
