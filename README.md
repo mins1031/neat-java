@@ -231,7 +231,7 @@ SOLID라고 하는 5가지 설계 원칙이 존재한다
   > 메서드 작업 내용중 인스턴스 변수를 필요로 한다면 static을 붙일 수 없다. 반대로 인스턴스 변수를 사용하지 않는다면 static붙이는 것이 좋다. 메서드 호출시간이 짧아지고 메모리에 한번만 적재하기에 효율적이다.
   ===> 다만 static은 객체지향적이기 보단 절차지향적인 느낌이 강하다... 또한 메모리에 한번만 올라가는 점은 효율적이지만 프로그램 종료시까지 메모리에 살아있기 때문에 다른문제를 야기할 수도 있다. 결론: static은 자주사용되는곳의 클래스변수로 할만한 곳에 선언하자.아니면 싱글톤을 활용하는것도 훌륭한 대안이 될 수 있다.
 
-## ==,equals,instanceof
+## ==,equals,instanceOf
 * 자바에서 == 은 기본타입인 int,double,char등에서는 '값'이 같은가를 비교하고 객체(참조타입)의 경우 주소값이 같은가를 비교하게 된다
 * equals의 경우도 기본적으로 내부 로직은 == 비교를 하고 있도록 구현되어있지만 클래스를 구현시 해당 클래스에 맞게 오버라이딩 하고 String의 경우 equals를 값이 동일하면 true를 리턴하도록 오버라이딩 해놓았기 때문에 '문자열 값'자체를 비교하게 된다. 객체 비교의 경우 비교하는 Object의 equals는 같은 주소값의 객체만 true이기 때문에 비교 객체 내에 equals를 오버라이딩 해줘야 객체의 '값'을 비교할수 있다고 하며 IDE에서 제공하는 equals를 사용하는것도 괜찮은 방법이라고한다.
 ```
@@ -242,3 +242,108 @@ System.out.println(a.equals(b)); // a와 b는 내용이 다르기 때문에 fals
 System.out.println(a == b); // a와 b는 각자 다른 String 객체기 때문에 false
 System.out.println(a.equals(c));// a와 b는 서로 내용이 같기 때문에 true
 ```
+## Collections
+> 자바에서 배열은 연관된 데이터를 관리하기 위한 수단이었다. 하지만 배열은 불편한점이 몇가지 있는데 그중 하나가 한번 정해진 배열의 크기를 변경할 수 없다는 점이다. 컬렉션즈 프레임워크를 사용하면 이런 불편함이 줄어든다.
+ ### 컬렉션즈 프레임워크
+> 컬렉션즈 프레임워크는 컨테이너라고도 부른다. 즉 값을 담는 그릇이다는 의미이다. 그런데 그 값의 성격에 따라 컨테이너의 성격이 조금씩 달라진다. 자바에서는 다양한 상황에서 사용할 수 있는 다양한 컨테이너를 제공하는데 이것을 컬렉션즈 프래임워크 라고 부른다.
+<img src ="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2154.png"/>
+* 위그림은 컬렉션즈 프래임워크의 구성을 보여준다 .Collection과 Map이라는 최상위 카테고리가 있고, 그 아래 다양한 컬렉션(=컨테이너)가 존재한다.
+<img src = "https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2160.png" />
+* List, Set , Queue는 모두 인터페이스 이다. ArrayList,vector,LinkedList모두 List인터페이스를 구현하기 때문에 공통의 조작 방법을 가지고 있는것이다.
+
+```
+ArrayList<String> al = new ArrayList<String>();
+        al.add("one");
+        al.add("two");
+        al.add("two");
+        al.add("three");
+        al.add("three");
+        al.add("five");
+        System.out.println("array");
+        Iterator ai = al.iterator();
+        while(ai.hasNext()){
+            System.out.println(ai.next());
+        }
+	
+HashSet<String> hs = new HashSet<String>();
+        hs.add("one");
+        hs.add("two");
+        hs.add("two");
+        hs.add("three");
+        hs.add("three");
+        hs.add("five");
+        Iterator hi = hs.iterator();
+        System.out.println("\nhashset");
+        while(hi.hasNext()){
+            System.out.println(hi.next());
+        }
+=> 코드의 결과
+array
+one
+two
+two
+three
+three
+five
+ 
+hashset
+two
+five
+one
+three
+```
+> 메서드 iterator는 인터페이스 Collection에 정의 되어있어 Collection을 구현하고 있는 모든 컬렉션즈 프레임 워크는 이 메서드를 구현하고 있음을 보증한다. iterato의 호출 결과는 인터페이스 iterator를 구현한 객체를 리턴한다. 인터페이스 iterator는 아래 hasNext(뒤에 반복할 데이터가 있으면 true, 없으면 false 리턴)와 next(hasNext가  true라는건 next가 리턴할 데이터가 존재한다는 의미. 결국 다음 데이터 출력이다.)를 가지고 있고 이 기능을 사용하면 for문 처럼 데이터를 순차접근 가능.
+* 위 결과처럼 Set은 중복을 허용하지 않고 순서가 없지만 List는 중복을 허용하고 순서가 유지된다는 것을 알 수 있다.
+ ### Set
+ > Set은 우리말로 집합이라는 뜻이다. 집합은 순서가 없고 중복되지 않는 특성이있다.마찬가지로 set에서도 교집합,차집합, 합집합과 같은 연산을 할 수 있다.
+ ```
+ //집합 h1,h2,h3가 있고 h1 = 1,2,3  h2 = 3,4,5  h3 = 1,2로 구성되어있다.
+ public static void main(String[] args) {
+        HashSet<Integer> A = new HashSet<Integer>();
+        A.add(1);
+        A.add(2);
+        A.add(3);
+         
+        HashSet<Integer> B = new HashSet<Integer>();
+        B.add(3);
+        B.add(4);
+        B.add(5);
+         
+        HashSet<Integer> C = new HashSet<Integer>();
+        C.add(1);
+        C.add(2);
+         
+        System.out.println(A.containsAll(B)); // false
+        System.out.println(A.containsAll(C)); // true
+         
+        //A.addAll(B);
+        //A.retainAll(B);
+        //A.removeAll(B);
+         
+        Iterator hi = A.iterator();
+        while(hi.hasNext()){
+            System.out.println(hi.next());
+        }
+    }
+ ```
+  #### 부분집합
+  ```
+  System.out.println(A.contailsAll(B));
+  System.out.println(A.contailsAll(C));
+  ```
+  <img src="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2155.png"/>
+  #### 합집합
+  ```
+  A.addAll(B);
+  ```
+  <img src="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2156.png"/>
+  #### 교집합
+  ```
+  A.retainAll(B);
+  ```
+  <img src="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2157.png"/>
+  #### 차집합
+  ```
+  A.removeAll(B);
+  ```
+  <img src="https://s3.ap-northeast-2.amazonaws.com/opentutorials-user-file/module/516/2158.png"/>
