@@ -612,3 +612,138 @@ pool-1-thread-1: 손을 씻었다.
         scheduler.scheduleAtFixedRate(beeper, 1,1, TimeUnit.SECONDS);
     }
   ```
+## String 과 StringBuffer
+> String : java에서 String 인스턴스는 한번 생성되면 그값을 읽기만 할 수 있고 변경(가공)할 수는 없다. 이러한 객체를 자바에선 '불변객체' 라고 한다. concat이나 +연산자로 문자열 결합은 할수 있지만 기존 문자열내용이 변경되는 것이 아닌 내용이 합쳐진 새로운 String 인스턴스가 생성되는 것이다. 다만 이 방식의 경우 많이 결합하면 할 수록 공간낭비,속도저하를 야기한다.
+> StringBuffer : StringBuffer클래스의 인스턴스는 그 값을 변경할 수도 있고 추가할 수도 있다. 이것을 위해 StringBuffer 내부적으로 버퍼를 가지고 있는데 버퍼 크기는 16개의 문자를 저장할 수있는 기본값을 가지고 있으며 생성자를 통해 크기를 별도 설정할수 있지만 별도 설정한 값+16개를 같이 생성해줘 여유있는 크기고 생성된다. 
+  ### 불변 클래스 vs 가변 클래스
+  * String과 같이 인스턴스가 한번 생성되면 그값을 변경할 수 없는 클래스를 **'불변 클래스'** 라고 한다.
+  * StringBuffer과 같이 자유롭게 인스턴스의 값을 변경할 수 있는 클래스를 **'가변 클래스'** 라고 한다.
+  * 불변 클래스는 기본적으로 값을 변경하는 set메서드를 포함하지 않는다.
+    * 불변 클래스를 사용하는 이유는 멀티스레드 환경에서 하나의 객체에 접근하면서 각각의 객체가 서로 영향을 주어서는 안되는 경우에 불변 인스턴스를 사용하면 값이 변하지 않는다는 점이 보장 된다.
+ ```
+ //append()메서드를 통해 StringBuffer 학습
+ StringBuffer str = new StringBuffer("Java");
+ System.out.println("원본 문자열 : " + str);
+
+ System.out.println(str.append("수업"));
+ System.out.println("append() 메소드 호출 후 원본 문자열 : " + str);
+ => 
+ 원본 문자열 : Java
+ Java수업
+ append() 메소드 호출 후 원본 문자열 : Java수업
+ ```
+ + 추가적으로 StringBuilder는 StringBuffer보다 성능은 좋지만 StringBuffer가 동기화가 되어 멀티스레드 환경에서 안정적이기에 멀티스레드 환경이라면 StringBuffer, 그 외엔 StringBuilder를 사용하는 편이 더 낫다고 한다.
+## 람다
+ ### Funtional interface
+  * 추상메서드를 1개만 갖고 있는 인터페이스.
+  * 메서드의 인자로 메서드를 전달하는 것이 목적이다.
+
+> funtional interface를 구현한 익명클래스를 람다식으로 바꿀수 있다(= 인터페이스이름과 추상메서드 이름을 생략). 개인적으로 람다를 쓰기 위해 funtional interface를 구현해 사용해줘야 하는데 그럼 어떤경우에 사용을 하게될까? 라는 생각엔 같은 역할을 하지만 내용은 다른 코드들을 간결하게 표현하기 위해 사용할것같다.
+```
+public class GreetingEx {
+
+    public void sayHello(Greeting greeting){
+        greeting.greet();
+    }
+
+    public void go(){
+        // 1. 영어 인사 클래스
+        class EnglishGreeting implements Greeting{
+            @Override
+            public void greet() {
+                System.out.println("Hello");
+            }
+        }
+        Greeting englishGreeting = new EnglishGreeting();
+        sayHello(englishGreeting);
+        //위를 보면 구지 Hello라는 문자열 출력하는 동작을 동작시키기 위해 인터페이스 생성해 동작시키는
+        //방식은 너무 번거롭다.
+
+        // 2. 프랑스 인사는 익명 클래스로 구현
+        Greeting frenchGreeting = new Greeting() {
+            @Override
+            public void greet() {
+                System.out.println("Bonjour");
+            }
+        };
+        sayHello(frenchGreeting);
+
+        //3. 스페인어 인사는 익명클래스를 메서드에 직접 삽입
+        sayHello(new Greeting() {
+            @Override
+            public void greet() {
+                System.out.println("Hola");
+            }
+        });
+
+        //4. 한국어 인사는 람다식 사용
+        //람다식은 funtional 인터페이스 구현체의 메서드 내부
+        Greeting koreanGreetin = () -> {
+            System.out.println("안녕");
+        };
+        sayHello(koreanGreetin);
+        //위의 내용은 밑처럼 줄일수 있다.
+
+        sayHello( () -> {
+            System.out.println("안녕");
+        });
+        /**
+         * funtional 인터페이스를 보면  인터페이스 이름과 내부의 메서드 이름은 중요하지않고 해당 인터페이스의
+         * 구현체가 중요한 것이기 떄문에 인자값과 메서드 내부만을 표기해 코드를 간결하게 하였다
+         * */
+    }
+    public static void main(String[] args){
+        new GreetingEx().go();
+    }
+}
+```
+* 자바에서 람다 표현식을 작성할때 유의점
+  1) 매개변수의 타입을 추론 할 수 있는 경우에는 타입을 생략할 수 있다.
+  2) 매개변수가 하나인 경우에는 괄호를 생략할 수 있다 ex) p -> {}
+  3) 함수의 몸체가 하나의 명령문만으로 이루어진경우 중괄호 {} 를 생략할 수 있다. if나 for도 마찬가지다
+  4) 함수의 몸체가 하나의 return문으로만 이루어진 경우엔 중괄호를 생략할 수 없다.
+  5) return문대신 표현식을 사용할 수 있으며 이때 반환값은 표현식의 결과값이 된다.
+## Stream API
+**http://tcpschool.com/java/java_stream_intermediate** 을 참고하여 공부후 복기형식으로 필기했다.
+
+> 스트림 API는 java SE 8 부터 추가되었다. 자바에서는 많은 양의 데이터를 저장하기 위해 배열이나 컬렉션을 사용하는데 이 데이터들에 접근하기 위해서 반복문이나 반복자(iterator)를 사용하여 매번 새 코드를 작성해야 한다. 이렇게 작성된 코드는 길이가 너무길고 가독성도 떨어지며 코드재사용이 거의불가능하다. 이러한 문제점을 극복하기 위해 나온것이 Stream API이다.
+* Stream API의 특징
+  1) 스트림은 외부 반복을 통해 작업하는 컬렉션과 달리 내부 반복을 통해 작업을 수행.
+  2) 스트림은 재사용이 가능한 컬렉션과는 달리 단 한번만 사용할 수 있다. 이후 사용하면 예외발생
+  3) 스트림은 원본데이터를 변경하지 않는다
+  4) 연산은 필터-맵 기반으니 API를 사용하여 지연연산을 통해 성능을 최적화 한다.
+  5) 스트림은 parallelStream() 메서드를 통한 손쉬운 병렬 처리를 지원한다.
+ * Stream API의 동작 흐름
+ > Stream API는 세가지 단계에 걸쳐 동작한다.
+   1) Stream의 생성
+   2) Stream의 중개연산(Stream의 변환)
+   3) Stream의 최종연산(Stream의 사용)
+   <img src="http://tcpschool.com/lectures/img_java_stream_operation_principle.png" />
+  ### Stream의 생성
+  > Stream API는 다음과 같은 다양한 데이터 소스에서 생성 가능
+    1) 컬렉션
+    2) 배열
+    3) 가변 매개변수
+    4) 지정된 범위의 연속된 정수
+    5) 특정 타입의 난수
+    6) 람다 표현식
+    7) 파일
+    8) 빈 스트림
+  ### Stream의 중개연산
+  > Stream API에 의해 생성된 초기 스트림은 중개연산을 통해 또 다른 스트림으로 변환된다. 중개연산은 스트림을 전달받아 스트림을 반환하므로 중개연산은 연속으로 . 로 연결해 사용가능하다.
+  * Stream API에서 사용할 수 있는 대표적 중개연산과 그에 따른 메서드
+    1) Stream 필터링 : filter(), distinct()
+    2) Stream 변환 : map(), flatMap()
+    3) Stream 제한 : limit(), skip()
+    4) Stream 정렬 : sorted()
+    5) Stream 연산결과 확인 : peek()
+  ### Stream의 최종연산
+  > Stream API에서 중개연산을 통해 변환된 스트림은 마지막으로 최종 연산을 통해 각 요소를 소모하여 결과를 표시한다. 즉 지연되었던 모든 중개연산들이 최종연산시에 모두 수행되는 것이다. 이렇게 최종연산시에 모든 요소를 소모한 해당 스트림은 더는사용x
+  * Stream API에서 사용할 수 있는 대표적이최종 연산과 그에 따른 메소드는 다음과 같다.
+    1) 요소의 출력: forEach()
+    2) 요소의 소모 : resuduce()
+    3) 요소의 검색 : findFirst(), findAny()
+    4) 요소의 검사 : anyMatch(), allMatch(), noneMatch()
+    5) 요소의 통계 : count(),min(),max()
+    6) 요소의 연산 : sum(),average()
+    7) 요소의 수집 : collect()
