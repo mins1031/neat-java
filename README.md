@@ -768,4 +768,82 @@ public class GreetingEx {
     6) 요소의 연산 : sum(),average()
     7) 요소의 수집 : collect()
 ## JAVA에서의 다중상속
-> 자바는 클래스는 다중상속이 불가능하지만 인터페이스는 가능하다. 바꿔말하면 구현체는 다중상속이 불가능 하지만 추상객체는 가능하다   
+* https://siyoon210.tistory.com/125 참고하여 공부하였다. 
+
+> 자바는 클래스는 다중상속이 불가능하지만 인터페이스는 가능하다. 바꿔말하면 구현체는 다중상속이 불가능 하지만 추상객체는 가능하다.왜 클래스는 다중상속이 불가능할까?
+### 다이아몬드 문제
+> 다중상속을 지원하게 되면 하나의 클래스가 여러상위 클래스를 상속 받을 수 있다. 이러면 문제가 발생하는데 이 문제를 '다이아몬드 문제' 라고한다
+
+<img src="https://t1.daumcdn.net/cfile/tistory/995652405C723D2216"/>
+위의 클래스다이어그램과 같은 상속구조에서 발생되는 문제가 다이아몬드 문제인데 GrandFather에 speak()이라는 메서드를 Father클래스들이 오버라이딩하여 구현하였을때 Son클래스는 어떤 부모의 speak메서드를 사용해야하는가?-> 여기서 충돌이 나게된다.
+
+```
+class GrandFather{
+  void speak(){
+    ..println("grand speak")
+  }
+}
+
+class FatherA extends GrandFather{
+  @Overrride
+  void speak(){
+    ..println("fatherA speak")
+  }
+}
+
+class FatherB extends GrandFather{
+  @Overrride
+  void speak(){
+    ..println("fatherB speak")
+  }
+}
+
+class Son extends FatherA,FatherB{ //상속할수 있다는 가정하!
+   super.speak()...??
+}
+// Son의 입장에선 같은 이름의 speak메서드가 상위클래스 두개에 다 
+// 정의되어있기 때문에 어떤 메서드를 실행해야할지 알수 없다
+```
+
+### 인터페이스 다중상속
+
+> 그런데 인터페이스는 다중상속이 가능하다. 클래스의 다중상속은 정의한 메서드가 충돌하는 문제가 생겨 불가했지만 인터페이스의 경우는 기능에대한 선언만 해두기 때문에 다이아몬드 문제가 발생해도 충돌이 발생하지 않아 문제가 없다.
+
+> 그런데 자바8 의default method는 인터페이스 내부에 코드를 구현하게 되는데 이렇게 내부에 코드를 구현해버리면 인터페이스의 다중상속은 불가해 진다.
+
+## Error vs Exceoption
+ ### Error 와 Exceoption
+   * Error는 컴파일시에 문법적이 오류와 런타임시 널포인트 참조와 가튼 오류로 프로세스에 심각한 문제를 야기시켜 프로세스를 종료시킬수 있다.개발자가 미리 예측해 방지 할 수 없다. 주로 메모리 부족이나 스택오버플로우 같은 심각한 오류다.
+  <img src = "https://github.com/GimunLee/tech-refrigerator/raw/master/Language/JAVA/resources/java-error-exception-003.png"/>
+  
+   * Exception는 개발자가 구현한 로직에서 발생한 실수나 사용자의 영향에 의해 발생한다. Error와 달리 개발자가 미리 예측해 방직할 수 있기 때문에 상황에 맞게 try-catch문으로 예외처리가 필요하다.
+  
+  <img src="https://github.com/GimunLee/tech-refrigerator/raw/master/Language/JAVA/resources/java-error-exception-002.png"/>
+ ### Throwable 클래스
+  <img src="https://github.com/GimunLee/tech-refrigerator/raw/master/Language/JAVA/resources/java-error-exception-001.png" />
+  > Throwable 클래스는 예외처리를 할 수 있는 최상위 클래스다. Throwable은 에러나 예외에 대한 메시지를 담고 예외가 연결될때 연결된 예외의 정보들을 기록한다고 한다. Throwable객체가 가진 정보와 할 수 있는 행위는 getMessage()와 printStackTrace()라는 메서드로 구현되어 있는데 이 둘을 이용해서 자주 예외처리를 해준다. 
+  => 즉 오류와 예외는 메세지를 담을수 있고 어떠한 원인에 의해 발생되었는지를 여결해 출력해줄수 있다.
+  * printStackTrace() : 발생한 Exception의 출처를 메모리상에서 추적하면서 결과를 알려준다. 발생한 위치를 정확히 출력하기에 제일 많이 사용되며 void를 반환
+  * getMessage() : 한줄로 요약된 메세지를 String으로 반환해 줍니다.
+  * getStackTrace() : jdk1.4부터 지원, printStackTrace()를 보완, StackTraceElement[]라는 문자열 배열로 변경해서 출력하고 저장한다.
+  
+ ### 예외처리 (Exception Handling)
+ > 잘못된 하나로 인해 전체 시스템이 무너지는 결과를 방지하기 위한 기술적인 처리입니다. java에서는 예외와 에러도 객체로 처리한다.
+ * 예외가 주로 발생하는 원인
+   * 사용자의 잘못된 데이터 입력
+   * 잘못된 연산
+   * 개발자가 로직을 잘못작성..^^
+   * 하드웨어, 네트워크 오작동
+   * 시스템 과부하
+  * 예외를 처리하는 방식
+    1) 직접 try-catch를 이요해서 예외에 대한 최종적인 책임을 지고 처리하는 방식
+    2) throw Exception을 이용해서 발생한 예외의 책임을 호출하는 쪽이 책임지도록 하는 방식(주로 호출하는 쪽에 예외를 보고하는 경우 사용)
+    + 타 메소드의 일부분으로 동작하는 경우 throw를 추천.
+ ### Exception의 2가지 종류
+ 1. Checked Exception : 예외처리가 필수이며, 처리하지 않으면 컴파일 되지 않습니다.JVM외부와 통신(네트워크, 파일시스템 등)할때 주로 쓰인다.
+   * RuntimeException 이외에 있는 모든 예외
+   * IOException, SQLException 등
+ 2. Unchecked Exception : 컴파일 때 체크되지 않고, Runtime에 발생하는 Exception을 말한다.
+   * RuntimeException 하위의 모든 예외
+   * NullPointerException, IndexOutOfBoundException 등
+ 
