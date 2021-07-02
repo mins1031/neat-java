@@ -143,11 +143,12 @@ SOLID라고 하는 5가지 설계 원칙이 존재한다
  #### Runtime Data area 
  JVM이 운영체제 위에서 실행하면 할당 받는 메모리 영역이다. PC레지스터, JVM스택, 네이티브 메서드 스택,힙,메서드  영역 총 5가지 영역으로 나누어진다. 이 중 **힙과 메서드 영역은 모든 스레드가 공유해서 사용한다.**
   * PC 레지스터 : 스레드가 어떤 명령어로 실행되어야 할지 기록하는 부분(JVM 명령의 주소를 가진다.)
-  * 스택 area : 지역변수 , 매개변수, 메서드 정보, 임시 데이터 등을 저장한다.
-  * 네이티브 메서드 스택 : 실제 실행할 수 있는 기계어로 작성된 프로그램을 실행시키는 영역
+  * 스택 area : 지역변수 , 매개변수, 메서드 정보, 임시 데이터 등을 빠르게 생성되고 사라지는 내용들을 저장한다. 즉 기본타입의 데이터들과 stack영역에 생성된 객체들의 참조타입 데이터(주소값)들 역시 관리하고 있다.
+    * 만약 foo() 메서드 내의 boo()메서드를 호출하고 boo()의 } 가 실행된경우 stack에 생성되었던 boo()메서드의 지역변수들은 모두 pop되어 stack에서 사라진다. 또한 stack 메모리는 Thread당 하나씩 생성되며 각 스레드에서 다른 스레드의 stack에 접근할수 없다.
+  * 네이티브 메서드 스택 : 실제 실행할 수 있는 기계어로 작성된 프로그램을 실행시키는 영역, 주로 바이트코드로 넘어온게 아닌 기계어로 넘어온 내역들을 저장하고 실행시키는 영역. C/C++코드를 수행하기 위한 공간
   * 힙 : 런타임에 동적으로 할당되는 데이터가 저장되는 영역. 객체나 배열 생성이 여기에 해당한다. (또한 힙에 할당된 데이터들은 가비지 컬렉터의 대상이 된다. JVM성능 이슈에서 가장 많이 언급되는 공간이다.) new연산자로 생성되는 클래스를저장
   * 메서드 영역 : JVM이 시작될때 생성되고
-    Class Loader가 적재한 클래스(또는 인터페이스)에 대한 메타데이터 정보가 저장된다. Non-Heap 영역으로 Permanent 영역에 저장된다. JVM 옵션 중 PermSize (Permanent Generation의 크기)를 지정할 때 고려해야 할 요소이다. Method Area는 아래의 정보들을 저장한다.
+    Class Loader가 적재한 클래스(또는 인터페이스)에 대한 메타데이터 정보가 저장된다. Non-Heap 영역으로 Permanent 영역에 저장된다. JVM 옵션 중 PermSize (Permanent Generation의 크기)를 지정할 때 고려해야 할 요소이다. Method Area는 아래의 정보들을 저장한다. 즉 어플리케이션으 실행될때 전역성이 있어야하는 내역들 예를들어 클래스,인터페이스, static, 
   1) Type Information
   - Interface 여부
   - 패키지 명을 포함한 Type 이름
@@ -169,6 +170,7 @@ SOLID라고 하는 5가지 설계 원칙이 존재한다
   5) Class Variable
   - static 키워드로 선언된 변수를 저장
   - 기본형이 아닌 static 변수의 실제 인스턴스는 Heap 메모리에 저장 -> static으로 생성되는 클래스역시 new로 치부되어 heap에 저장된다는 의미이다.
+ <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=http%3A%2F%2Fcfile21.uf.tistory.com%2Fimage%2F2308964B58C579C033A482"/>
   + 메모리 상수풀 영역 : 힙 영역에서 생성되고 자바 프로세스 종료까지 계속 유지된는 메모리 영역. 기본적으로 JVM에서 관리하고 각 클래스, 인터페이스 상수, 메서드 필드와 모든 레퍼런스가 담겨있디. 런타임 상수 풀의 역할은 이미 있는 메소드나 필드의 참조를 통해 중복을 막음.
 
 #### 가비지 컬렉션
@@ -846,4 +848,4 @@ class Son extends FatherA,FatherB{ //상속할수 있다는 가정하!
  2. Unchecked Exception : 컴파일 때 체크되지 않고, Runtime에 발생하는 Exception을 말한다.
    * RuntimeException 하위의 모든 예외
    * NullPointerException, IndexOutOfBoundException 등
- 
+
