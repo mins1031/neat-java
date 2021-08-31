@@ -950,3 +950,4 @@ class Son extends FatherA,FatherB{ //상속할수 있다는 가정하!
    * RuntimeException 하위의 모든 예외
    * NullPointerException, IndexOutOfBoundException 등
 
+## [이펙티브 자바]
