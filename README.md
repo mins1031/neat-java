@@ -831,7 +831,7 @@ public class GreetingEx {
   1) 스트림은 외부 반복을 통해 작업하는 컬렉션과 달리 내부 반복을 통해 작업을 수행.
   2) 스트림은 재사용이 가능한 컬렉션과는 달리 단 한번만 사용할 수 있다. 이후 사용하면 예외발생
   3) 스트림은 원본데이터를 변경하지 않는다
-  4) 연산은 필터-맵 기반으니 API를 사용하여 지연연산을 통해 성능을 최적화 한다.
+  4) 연산은 필터-맵 기반 API를 사용하여 지연연산을 통해 성능을 최적화 한다.
   5) 스트림은 parallelStream() 메서드를 통한 손쉬운 병렬 처리를 지원한다.
  * Stream API의 동작 흐름
  > Stream API는 세가지 단계에 걸쳐 동작한다.
@@ -930,18 +930,112 @@ public class GreetingEx {
     Arrays.asList(1,4,3,2).stream().sorted((a,b) -> b.compareTo(a)).forEach(System.out::println); // 4,3,2,1
     Arrays.asList(1,4,3,2).stream().sorted( (a,b) -> -a.compareTo(b)).forEach(System.out::println); // 4,3,2,1
     ```
+    
     5) Stream 연산결과 확인 : peek()
-  
+    > peek()은 스트림의 요소를 사용해 추가로 동작을 수행한다.
+    * 스트림 연산과정에서 중간중간 결과를 확인 할 때 사용할 수 있다. 
+    * 반드시 최종연산 메서드가 호출되어야 동작한다.
+    * 위의 firter예제를 보면 최종 연산은 forEach를 이용해 출력하고 있는데 만약 밑의 예제 처럼 최종연산이 sum()이면 중간에 동작하는 값을 출력해볼 방법이 없다. 이경우 peek()이 유용하게 사용될 수 있다.
+    ```
+    int sum = intList.stream().filter(x -> x<=2)
+	.peek(System.out::println)
+	.mapToInt(Integer::intValue).sum();
+    System.out.println("sum: "+sum);
+    //1
+      2
+      sum: 3
+    ```
+    
   ### Stream의 최종연산
   > Stream API에서 중개연산을 통해 변환된 스트림은 마지막으로 최종 연산을 통해 각 요소를 소모하여 결과를 표시한다. 즉 지연되었던 모든 중개연산들이 최종연산시에 모두 수행되는 것이다. 이렇게 최종연산시에 모든 요소를 소모한 해당 스트림은 더는사용x
   * Stream API에서 사용할 수 있는 대표적이최종 연산과 그에 따른 메소드는 다음과 같다.
     1) 요소의 출력: forEach()
-    2) 요소의 소모 : resuduce()
+    > 스트림의 요소들을 순환하면서 반복해서 처리해야 하는 경우 사용한다
+    ```
+    intList.stream().forEach(System.out::println); // 1,2,3
+    intList.stream().forEach(x -> System.out.printf("%d : %d\n",x,x*x)); // 1,4,9
+    ```
+    * for문대신 한줄로 사용하기 딱좋을듯 하다
+    2) 요소의 소모 : reduce()
+    > map과 비슷하게 동작하지만 개별연산이 아니라 누적연산이 이루어진다는 차이가 있다.
+    * 두개의 인자, 즉 n,n+1을 가지며 연산결과는 n이 되고 다시 다음요소와 연산을 하게된다
+    * 즉 1,2번째 요소를 연산하고 그 결과와 3번째 요소를 연산하는 식이다.
+    ```
+    int sum = intList.stream().reduce((a,b) -> a+b).get();  // 1+2 = 3 -> 3+3 =6 
+    System.out.println("sum: "+sum);  // 6
+    ```
+    
     3) 요소의 검색 : findFirst(), findAny()
+    > 두 메서드는 스트림에서 지정한 첫번째 요소를 찾는 메서드이다.
+    * 보통 filter()와 함께 사용되고 findAny()는 parallelStream()에서 병렬처리시 가장 먼저 발견된 요소를 찾는 메서드로 결과는 스트림원소의 정렬 순서와 상관 없다.
+    ```
+    strList.stream().filter(s -> s.startsWith("H")).findFirst().ifPresent(System.out::println);  //Hwang
+    strList.parallelStream().filter(s -> s.startsWith("H")).findAny().ifPresent(System.out::println);  //Hwang or Hong
+    ```
+    * 결국 만든 스트림에서 첫번째 요소를 가져오는것이 findFirst()와 findAny()이다.
+    
     4) 요소의 검사 : anyMatch(), allMatch(), noneMatch()
+    > 스트림의 요소중 특정 조건을 만족하는 요소를 검사하는 메서드
+    * 원소중 일부, 전체 혹은 일치하는 것이 없는 경우를 검사하고 boolean값을 리턴한다.
+    * noneMath()의 경우 일치하는것이 하나도 없을때 true이다.
+    ```
+    boolean result1 = strList.stream().anyMatch(s -> s.startsWith("H"));  //true
+    boolean result2 = strList.stream().allMatch(s -> s.startsWith("H"));  //false
+    boolean result3 = strList.stream().noneMatch(s -> s.startsWith("T")); //true
+    boolean result4 = strList2.stream().allMatch(s -> s.endsWith("g")); //ture
+    System.out.printf("%b, %b, %b, %b",result1,result2, result3,result4);
+    ```
+    
     5) 요소의 통계 : count(),min(),max()
+    > 스트림의 원소들로 부터 전체 개수, 최소값, 최대값을 구하기 위한 메서드이다.
+    * min(), max()의 경우 Comparator를 인자로 요구하고 있으므로 기본 Comparator들을 사용하거나 직접 람다 표현식으로 구현해야 한다.
+    ```
+    intList.stream().count();	// 3
+    intList.stream().filter(n -> n !=2 ).count(); 	// 2
+    intList.stream().min(Integer::compare).ifPresent(System.out::println);; 		// 1
+    intList.stream().max(Integer::compareUnsigned).ifPresent(System.out::println);; // 3
+
+    strList.stream().count();	// 3
+    strList.stream().min(String::compareToIgnoreCase).ifPresent(System.out::println);	// Hong
+    strList.stream().max(String::compareTo).ifPresent(System.out::println);	// Kang
+    ```
+    * 좀 여렵긴한데 compare정리 필요할듯 String 은 이해가 잘 안된다.조사 필요
+    
     6) 요소의 연산 : sum(),average()
+    > 스트림 원소들의 합계를 구하거나 평균을 구하는 메서드 이다.
+    * reduce()와 map()을 이용해도 구현이 가능 하다. 이경우 리턴값이 옵셔널이기 때문에 ifPresent()를 이용해 값을 출력할 수 있다.
+    ```
+    intList.stream().mapToInt(Integer::intValue).sum();	// 6
+    intList.stream().reduce((a,b) -> a+b).ifPresent(System.out::println); // 6
+
+    intList.stream().mapToInt(Integer::intValue).average();	// 2
+    intList.stream().reduce((a,b) -> a+b).map(n -> n/intList.size()).ifPresent(System.out::println); // 2
+    ```
+
     7) 요소의 수집 : collect()
+    > 스트림의 결과를 모으기 위한 메서드로 Collectors 객체에 구현된 방법에 따라 처리하는 메서드이다.
+    * 최종 처리후 데이터를 변환하는 경우가 많기 때문에 잘 알아 두어야 한다.
+    * 용도별로 사용할수 있는 Collectors의 메서드는 기능별로 다음과 같다
+      * 스트림을 배열이나 컬렉션으로 변환 : toArray(), toCollection(), toList(), toSet(), toMap()
+      * 요소의 통계와 연산 메소드와 같은 동작을 수행 : counting(), maxBy(), minBy(), summingInt(), averagingInt() 등
+      * 요소의 소모와 같은 도작을 수행 : reducing(), joining()
+      * 요소의 그룹화와 분할 : groupungBy(), partitioningBy()
+    ```
+    strList.stream().map(String::toUpperCase).collect(Collectors.joining("/"));	 // Hwang/Hong/Kang
+    strList.stream().collect(Collectors.toMap(k -> k, v -> v.length())); // {Hong=4, Hwang=5, Kang=4}
+
+    intList.stream().collect(Collectors.counting());
+    intList.stream().collect(Collectors.maxBy(Integer::compare));
+    intList.stream().collect(Collectors.reducing((a,b) -> a+b)); // 6
+    intList.stream().collect(Collectors.summarizingInt(x -> x)); //IntSummaryStatistics{count=3, sum=6, min=1, average=2.000000, max=3}
+
+    Map<Boolean, List<String>> group = strList.stream().collect(Collectors.groupingBy(s -> s.startsWith("H")));
+    group.get(true).forEach(System.out::println);  // Hwang, Hong
+
+    Map<Boolean, List<String>> partition = strList.stream().collect(Collectors.partitioningBy(s -> s.startsWith("H")));
+    partition.get(true).stream().forEach(System.out::println);  // Hwang, Hong
+    ```
+    
 ## JAVA에서의 다중상속
 * https://siyoon210.tistory.com/125 참고하여 공부하였다. 
 
