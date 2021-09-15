@@ -853,11 +853,83 @@ public class GreetingEx {
  
  ### Stream의 중개연산
   > Stream API에 의해 생성된 초기 스트림은 중개연산을 통해 또 다른 스트림으로 변환된다. 중개연산은 스트림을 전달받아 스트림을 반환하므로 중개연산은 연속으로 . 로 연결해 사용가능하다.
+  * 스트림은 어떻게가 아니라 무엇을 할 것이지에 목적을 두고 사용해야 한다
+  ```
+  Arrays.stream(strArr).sorted().forEach(System.out::println);
+  strList.stream().sorted().forEach(System.out::println);
+  //위 처럼 배열 -> 리스트로, 리스트 -> 배열로 하는 과정을 for문없이 손쉽게 사용가능	
+  ```
+  ```
+  Arrays.stream(strArr)
+                .distinct()
+                .limit(5)
+                .sorted()
+                .forEach(System.out::print);
+        //배열을 중복제거하고 5개로 갯수 제한하고 정렬해 forEach로 출력해준다.
+  ```
+  
   * Stream API에서 사용할 수 있는 대표적 중개연산과 그에 따른 메서드
+  ```
+  List<Integer> intList = Arrays.asList(1,2,3);
+  List<String> strList = Arrays.asList("Hwang", "Hong", "Kang");
+  ```
+  
+  * 밑의 예시들은 모두 위의코드를 사용한다고 가정
+  
     1) Stream 필터링 : filter(), distinct()
+    > 스트림 요소를 필터링하기 위한 메서드.
+      * firter()는 스트림 요소마다 비교문을 만족하는 요소로 구성된 스트림을 반환한다
+      * 즉 **특정조건에 맞는 값만 추리기 위한 용도**로 사용한다
+      * **distinct()는 요소들의 중복을 제거하고 스트림을 반환**한다.
+    ```
+    intList.stream().filter(x -> x<=2).forEach(System.out::print); -> 1 2
+    //intList에서 2보다 작거나 같은 값만 출력해주는 코드
+    Arrays.asList(1,2,3,2,5).stream().distinct().forEach(System.out::print); -> 1 2 3 5
+    //asList의 인자인 1,2,3,2,5중 중복을 제거해서 출력해주는 코드
+    ```
+    * 각 요소마다 if문으로 체크해줘야할때 filter()가 유용할 것 같다.
     2) Stream 변환 : map(), flatMap()
+    > map()은 스트림의 각 요소마다 수행할 연산을 구현할때 사용한다.
+    ```
+    intList.stream().map(x -> x*x).forEach(System.out::println); // 1,4,9
+    //1,2,3의 내용이 map()의 내용인 x*x에 따라 곱해져서 출력되었다.
+    ```
+    * 각 요소마다 특정한 연산이나 로직이 들어가야 할때 map()이 유용할 것 같다.
+    
+    > flatMap()은 기존의 요소를 새로운 요소로대체한 스트림을 생성한다
+    ```
+    Arrays.asList(intList,Arrays.asList(2,5)).stream()
+	.flatMap(i -> i.stream())
+	.forEach(System.out::println); // 1,2,3,2,5
+    //새로운 스트림을 생성해주는것이기에 기존 intList 1,2,3에서 flatMap()으로 스트림을 생성해 출력하면             1,2,3,2,5 가 나오게 된다.
+    
+    strList.stream()
+	.flatMap(message -> Arrays.stream(message.split("an")))
+	.forEach(System.out::println);  // Hw, a, Hong, K, g
+    //역시 새로운 스트림이 생성되기에 Message(인덱스)마다 an을 제거한 새로운 배열이 생성되어 출력되게 된다.
+    ```
+    
     3) Stream 제한 : limit(), skip()
+    > limit()은 스트림의 시작 요소로 부터 인자로 전달된 인덱스까지의 요소를 추출해 새로운 스트림을 생성한다.
+    ```
+    intList.stream().limit(2).forEach(System.out::println); // 1,2
+    //intList 1,2,3중 2개로 제한을 두어 2개까지만 추출해 새로운 스트림을 생성한 코드
+    ```
+    * 갯수 제한하는 로직에서 유용할 것 같다
+    
+    > skip()은 스트림의 시작 요소로 부터 인자로 전달된 인덱스 까지를 제외하고 새로운 스트림을 생성한다.
+    ```
+    intList.stream().skip(2).forEach(System.out::println); // 3
+    //여기서 주의할 것은 skip내의 인자는 0부터가 아닌 1부터이기 때문에 3이 나올수 있다. 
+    ```
+    
     4) Stream 정렬 : sorted()
+    > sorted()는 스트림 요소를 정렬하는 메서드로 기본적으로 올림차순으로 정렬한다.     
+    ```
+    Arrays.asList(1,4,3,2).stream().sorted().forEach(System.out::println); // 1,2,3,4
+    Arrays.asList(1,4,3,2).stream().sorted((a,b) -> b.compareTo(a)).forEach(System.out::println); // 4,3,2,1
+    Arrays.asList(1,4,3,2).stream().sorted( (a,b) -> -a.compareTo(b)).forEach(System.out::println); // 4,3,2,1
+    ```
     5) Stream 연산결과 확인 : peek()
   
   ### Stream의 최종연산
