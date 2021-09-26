@@ -2,12 +2,18 @@ package com.company.employee;
 
 import com.company.team.Department;
 
+import java.util.Objects;
+
 public class Member {
 
     private String name;
     private Department department;
     private int age;
     private String email;
+
+    public Member(String name) {
+        this.name = name;
+    }
 
     public Member(String name, Department department, int age, String email) {
         this.name = name;
@@ -46,5 +52,12 @@ public class Member {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, department, age, email);
     }
 }

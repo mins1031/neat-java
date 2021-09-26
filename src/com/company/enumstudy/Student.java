@@ -1,12 +1,12 @@
 package com.company.enumstudy;
 
-public class Player {
+public class Student {
 
     private String name;
     private int age;
-    private Status presentStatus;
+    private Grade presentStatus;
 
-    public Player() {
+    public Student() {
     }
 
     public String getName() {
@@ -25,11 +25,11 @@ public class Player {
         this.age = age;
     }
 
-    public Status getPresentStatus() {
+    public Grade getPresentStatus() {
         return presentStatus;
     }
 
-    public void setPresentStatus(Status presentStatus) {
+    public void setPresentStatus(Grade presentStatus) {
         this.presentStatus = presentStatus;
     }
 }
