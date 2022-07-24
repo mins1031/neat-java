@@ -228,6 +228,7 @@ SOLID라고 하는 5가지 설계 원칙이 존재한다
    
   3) Minor GC의 동작 방식
   > Minor GC를 정확히 이해하기 위해선 Young 영역의 구조에 대해 이해를 해야한다. Young 영역은 1개의 Eden 영역과 2개의 Survivor 영역, 총 3가지로 나뉜다.
+ 
   * Eden 영역 : 새로 생성된 객체가 할당되는 영역 
   * Survivor 영역 : 최소 1번의 GC 이상 살아남은 객체가 존재하는 영역
     1) 객체가 새롭게 생성되면 Young 영역 중에서도 Eden 영역에 할당 된다
@@ -263,14 +264,16 @@ SOLID라고 하는 5가지 설계 원칙이 존재한다
      * 하지만 Parallel GC는 `여러개의 쓰레드를 통해 Parallel하게 GC를 수행함`으로써 GC의 오버헤드를 상당히 줄여준다
       * Parallel GC는 멀티프로세서 or 멀티 쓰레드 머신에서 중간~대규모 데이터를 처리하는 애플리케이션을 위해 고안 되었으며 옵션을 통해 GC를 수행할 쓰레드의 갯수등을 설정할 수 있다.
       * Parallel GC가 오버헤드를 상당히 줄여주었음에도 어플리케이션의 지연형상을 피할 수 없었고 개선을 위해 다른 알고리즘이 나오게 되었다
-    3) CMS GC
+   3) CMS GC
       * CMS GC는 Parallel GC와 마찬가지로 여러개의 쓰레드를 이용한다.
       * 다만 기존 알고리즘과는 다르게 Mark Sweep알고리즘을 Concurrent하게 수행한다고 한다
       * 어플리케이션이 구동중일때 `프로세스의 자원을 공유받아` 이용하기 때문에 응답시간이 느려질순 있지만 멈추지는 않는다
       * 다만 Compaction 단계가 수행되지 않아 장기적으로는 조각난 부스러기 메모리가 많아지고 Compaction단계가 수행되면 오히려 Stop The World 시간이 길어지는 문제가 발생할 수 있다
       * 현재 java14부터 사용중지되었다.
-    4) G1 GC
+   4) G1 GC
+   
     <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FdHxPiT%2FbtqU0xWGaDI%2FwriFcFKPHND5pTAsyn47X1%2Fimg.png"/>
+    
       * G1 GC는 장기적으로 많은 문제를 야기할 수 있는 CMS GC를 대체하기 위해 개발되었고 java7부터 도입되었다.
       * 기존의 GC 알고리즈에선 힙영역을 물리적으로 Young 영역(Eden, Survivor영역 2개)과 Old영역으로 나누어 사용하였다.
       * G1 Gc는 Eden 영역에 할당하고 Survivor로 카피하는 등의 과정을 사용하지만 물리적으로 메모리 공간을 나누지는 않는다. 대신 Region이라는 개념을 새로 도입해 힙을 균등하게 여러개의 지역으로 나누고 각 지역을 역할과 함께 논리적으로 구분하여 객체를 할당한다.
