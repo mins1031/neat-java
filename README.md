@@ -271,7 +271,6 @@ SOLID라고 하는 5가지 설계 원칙이 존재한다
       * 다만 Compaction 단계가 수행되지 않아 장기적으로는 조각난 부스러기 메모리가 많아지고 Compaction단계가 수행되면 오히려 Stop The World 시간이 길어지는 문제가 발생할 수 있다
       * 현재 java14부터 사용중지되었다.
    4) G1 GC
-   
     <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FdHxPiT%2FbtqU0xWGaDI%2FwriFcFKPHND5pTAsyn47X1%2Fimg.png"/>
     
       * G1 GC는 장기적으로 많은 문제를 야기할 수 있는 CMS GC를 대체하기 위해 개발되었고 java7부터 도입되었다.
